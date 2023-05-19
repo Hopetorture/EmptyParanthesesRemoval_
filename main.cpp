@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -6,46 +7,33 @@
 
 void fn(std::string& s)
 {
-    int openBrackets = 0;
     std::vector<int> openBracketsPos;
     std::unordered_set<int> contaminatedSequences;
-    std::unordered_set<int> toRemove;
 
     for (int i = 0; i < s.size(); i++)
     {
         auto& ch = s[i];
         if (ch == '(') // start of bracket sequence
         {
-            openBrackets++;
             openBracketsPos.push_back(i);
         }
-        else if (openBrackets > 0 && ch != ')')
+        else if (!openBracketsPos.empty() > 0 && ch != ')')
         {// state -> sequence started, encountered non closing symbol
             contaminatedSequences.insert(openBracketsPos.back());
         }
-        else if(openBrackets > 0) /// sequence closing, ch == ')'
+        else if(!openBracketsPos.empty()) /// sequence closing, ch == ')'
         {
             auto it = contaminatedSequences.find(openBracketsPos.back());
             if (it == contaminatedSequences.end()) /// empty brackets
             {
-                toRemove.insert(i);
-                toRemove.insert(openBracketsPos.back());
+                s[i] = (char)0;
+                s[openBracketsPos.back()] = char(0);
             }
-            openBrackets--;
-            openBracketsPos.pop_back(); /// close bracket sequence
+            openBracketsPos.pop_back();
         }
     }
-
-    int slow = 0; // builds resulting str
-    for (int i = 0; i < s.size(); i++)
-    {
-        if (toRemove.find(i) == toRemove.end())
-        {
-            s[slow] = s[i];
-            slow++;
-        }
-    }
-    s.erase(slow, s.size() - slow);
+    auto it = std::remove(s.begin(), s.end(), (char)0);
+    s.erase(it, s.end());
 }
 
 int main() {
